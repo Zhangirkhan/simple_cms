@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>registration</name>
+<description>
+	<lang code="ru" id="1" default="yes">Регистрация</lang>
+	<lang code="en" id="2">Регистрация</lang>
+	<lang code="kz" id="3">Регистрация</lang>
+</description>
+</module>

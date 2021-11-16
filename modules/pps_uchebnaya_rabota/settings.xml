@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_uchebnaya_rabota</name>
+<description>
+	<lang code="ru" id="1" default="yes">Учебная работа</lang>
+	<lang code="en" id="2">Учебная работа</lang>
+	<lang code="kz" id="3">Учебная работа</lang>
+</description>
+</module>

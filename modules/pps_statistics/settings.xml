@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_statistics</name>
+<description>
+	<lang code="ru" id="1" default="yes">Статистика преподавателя</lang>
+	<lang code="en" id="2">Статистика преподавателя</lang>
+	<lang code="kz" id="3">Статистика преподавателя</lang>
+</description>
+</module>

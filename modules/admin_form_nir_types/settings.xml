@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>admin_form_nir_types</name>
+<description>
+	<lang code="ru" id="1" default="yes">НИР настройки</lang>
+	<lang code="en" id="2">НИР настройки</lang>
+	<lang code="kz" id="3">НИР настройки</lang>
+</description>
+</module>

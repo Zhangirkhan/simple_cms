@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>chat</name>
+<description>
+	<lang code="ru" id="1" default="yes">Чат</lang>
+	<lang code="en" id="2">Chat</lang>
+	<lang code="kz" id="3">Чат</lang>
+</description>
+</module>

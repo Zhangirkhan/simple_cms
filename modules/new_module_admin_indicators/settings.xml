@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_module_admin_indicators</name>
+<description>
+	<lang code="ru" id="1" default="yes">Страница идентификатора администратора</lang>
+	<lang code="en" id="2">Страница идентификатора администратора</lang>
+	<lang code="kz" id="3">Страница идентификатора администратора</lang>
+</description>
+</module>

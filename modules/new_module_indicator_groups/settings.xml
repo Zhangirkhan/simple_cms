@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_module_indicator_groups</name>
+<description>
+	<lang code="ru" id="1" default="yes">Новая группа индикаторов</lang>
+	<lang code="en" id="2">Новая группа индикаторов</lang>
+	<lang code="kz" id="3">Новая группа индикаторов</lang>
+</description>
+</module>

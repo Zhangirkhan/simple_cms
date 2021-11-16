@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_module_researcher_indicators</name>
+<description>
+	<lang code="ru" id="1" default="yes">Новая страница индикаторы для подтверждения</lang>
+	<lang code="en" id="2">Новая страница индикаторы для подтверждения</lang>
+	<lang code="kz" id="3">Новая страница индикаторы для подтверждения</lang>
+</description>
+</module>

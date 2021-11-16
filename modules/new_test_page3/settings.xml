@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_test_page3</name>
+<description>
+	<lang code="ru" id="1" default="yes">Страница идентификатора</lang>
+	<lang code="en" id="2">Страница идентификатора</lang>
+	<lang code="kz" id="3">Страница идентификатора</lang>
+</description>
+</module>

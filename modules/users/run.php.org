@@ -1,0 +1,278 @@
+<?php
+
+	$moduleName = "expense_budget";
+	$prefix = "./modules/" . $moduleName . "/";
+	
+	$tpl->define(array(
+			$moduleName => $prefix . $moduleName . ".tpl",
+			$moduleName . "expense_budget_item" => $prefix . "expense_budget_item.tpl",
+			$moduleName . "inner" => $prefix . "inner.tpl",
+			$moduleName . "inner_item" => $prefix . "inner_item.tpl",
+			$moduleName . "nodata" => $prefix . "nodata.tpl",
+		));
+
+		$fileTypes = array('jpg', 'jpeg', 'gif', 'png'); 
+
+		$docTypes = array('docx', 'txt', 'rtf', 'pdf', 'xls', 'xml', 'htm', 'html', 'swf', 'zip', 'rar', 'mht', 'wmv', 'avi', 'mp4');
+
+		$newFileName1 = '';
+		$newFileName2 = '';
+		$newFileName3 = '';
+		$newFileName4 = '';
+
+		$newDocName1 = '';
+	#VARIABLES
+	
+	#FUNCTION #####################################################
+
+	function getFullTextMonth($idMonth){ //Возврат месяца по номеру месяца в базе данных
+		if($idMonth==1){
+			$monthName ='Январь';
+		}else if($idMonth==2){
+			$monthName ='Февраль';
+		}else if($idMonth==3){
+			$monthName ='Март';
+		}else if($idMonth==4){
+			$monthName ='Апрель';
+		}else if($idMonth==5){
+			$monthName ='Май';
+		}else if($idMonth==6){
+			$monthName ='Июнь';
+		}else if($idMonth==7){
+			$monthName ='Июль';
+		}else if($idMonth==8){
+			$monthName ='Август';
+		}else if($idMonth==9){
+			$monthName ='Сентябрь';
+		}else if($idMonth==10){
+			$monthName ='Октябрь';
+		}else if($idMonth==11){
+			$monthName ='Ноябрь';
+		}else if($idMonth==12){
+			$monthName ='Декабрь';
+		}
+		 return $monthName;
+	}
+			
+	# POST ##########################################################################
+	if (isset($_POST['addMonthBudgetSend'])) {
+		$year = $_POST['year'];
+		$month = $_POST['month'];
+		$budget = $_POST['budget'];
+
+		$result = db_query("SELECT * FROM module_budget WHERE `year` = '".$year."' AND `month` = '".$month."' AND osi_id = '".$_SESSION['id']."'");
+		if (db_num_rows($result) > 0) {
+			
+		}else{
+			$sql = "INSERT INTO module_budget SET time_create = NOW(), `year` = '".$year."', `month` = '".$month."', budget = '".$budget."', osi_id = '".$_SESSION['id']."'";
+			db_query($sql);
+		}
+		
+
+		header("location: ".$_SERVER['REQUEST_URI']);
+		exit();
+	}
+
+	if (isset($_POST['addExpenseSend'])) {
+		$title = $_POST['title'];
+		$description = $_POST['description'];
+		$expense = $_POST['expense'];
+		$work_type = $_POST['work_type'];
+
+		$newDocName1 = '';
+		
+		if (!empty($_FILES['file1'])) {
+			$fileParts = pathinfo($_FILES['file1']['name']);
+			if (in_array($fileParts['extension'], $docTypes)) {
+				$filename = $_FILES['file1']['name'];
+				$tmp_filename = $_FILES['file1']['tmp_name'];
+				$newDocName1 = time()."-1.".$fileParts['extension'];
+
+				$ret = copy($tmp_filename, "./files/".$newDocName1);
+			}
+		}
+
+		$id_array = '';
+		$files_array = [$newDocName1];
+		foreach ($files_array as $key => $value) {
+			if ($value != "") {
+				$sql = "INSERT INTO module_files SET url_files = '".$value."'";
+				db_query($sql);
+
+				$id_array[] = db_insert_id();
+			}
+		}
+
+		$files_id = serialize($id_array);
+
+		$sql = "INSERT INTO module_expense_budget SET budget_id = '".$_GET['item_id']."', title = '".$title."', description = '".$description."', expense = '".$expense."', files = '".$files_id."', work_type = '".$work_type."', time_create = NOW()";
+		db_query($sql);
+
+		header("location: ".$_SERVER['REQUEST_URI']);
+		exit();
+	}
+	# MAIN ##########################################################################
+	
+	if (isset($_SESSION['id'])) {	
+		if (isset($_GET['item_id'])) { //Если в ссылке есть ID ВНУТРЕННАЯ ССЫЛКА
+			$id = cleanStr($_GET['item_id']);
+			$summ_expense = db_get_data("SELECT SUM(expense) AS expense FROM module_expense_budget WHERE budget_id = ".$id, "expense");
+			$summ_budget = db_get_data("SELECT budget FROM module_budget WHERE id = ".$id, "budget");
+
+			// $result = db_query("SELECT * FROM module_budget WHERE osi_id = ".$_SESSION['id']);
+			$index = 0;
+			$result = db_query("SELECT * FROM module_expense_budget WHERE budget_id = ".$id);
+			if (db_num_rows($result) > 0) {
+				$tpl->CLEAR("INNER_ITEMS");
+				while ($row = db_fetch_array($result)) {
+					$index++;
+
+					$work_type = db_get_data("SELECT * FROM module_request_types WHERE id = ".$row['work_type']);
+					
+					$arr = unserialize($row['files']);
+					if($row['files']!='s:0:"";'){
+						$file_url = db_get_data("SELECT url_files FROM module_files WHERE id = ".$arr[0], "url_files");
+						$tpl->assign("DOWNLOAD_FILE_INNER", '<a  class="btn btn-primary btn-sm" href="download.php?file='.$file_url.'" data-original-title="Скачать файл"><i class="fa fa-download"></i></a>');
+					}else{
+						$tpl->assign("DOWNLOAD_FILE_INNER", "");
+					}
+					
+					if($_SESSION['type']==2){
+						$tpl->assign("DELETE_EXPENSE", '<a class="btn btn-danger btn-sm text-white" data-toggle="tooltip" data-original-title="Удалить" onclick="deleteExpense('.$row['id'].')"><i class="fa fa-trash"></i></a>');
+					}else{
+						$tpl->assign("DELETE_EXPENSE", "");
+					}
+
+					$tpl->assign("ROW_NUMBER", $index);
+					$tpl->assign("TITLE", $row['title']);
+					$tpl->assign("DESCRIPTION", $row['description']);
+					$tpl->assign("EXPENSE", $row['expense']);
+					$tpl->assign("WORK_TYPE", $work_type['name']);
+					
+					$tpl->parse("INNER_ITEMS", ".".$moduleName."inner_item");	
+				}
+			}
+
+			
+			if($summ_expense>0){
+				$tpl->assign("SUMM_EXPENSE", $summ_expense);
+			}else{
+				$tpl->assign("SUMM_EXPENSE", '0');
+			}
+			$tpl->assign("SUMM_BUDGET", $summ_budget);
+			$balance = $summ_budget - $summ_expense;
+			$tpl->assign("SUMM_BALANCE", $balance);
+
+			//Для форм
+			$work_type = db_get_array("SELECT * FROM module_request_types", "id", "name");
+			assignList("WORK_LIST", $work_type);
+
+			$tpl->parse(strtoupper($moduleName), $moduleName . "inner");	
+	
+		}else{ // ВНЕШНАЯ СТРАНИЦА
+			if($_SESSION['type'] == 3 ){
+				$result = db_query("SELECT t2.osi_id FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t2.id = t1.flat_id WHERE t1.`status`=1 AND t1.citizen_id = ".$_SESSION['id']." GROUP BY t2.osi_id");
+				if (db_num_rows($result) > 0) {
+					while ($row = db_fetch_array($result)) {
+							$osi_ids .=  $row['osi_id']. ',';
+					}
+					$osi_ids = mb_substr($osi_ids, 0, -1);
+				}
+				$tpl->assign("DISPLAYOSI", '');
+				$tpl->assign("BUTTON_ADD_BUDGET", '');
+				
+			}else if($_SESSION['type'] == 2){
+				$osi_ids = $_SESSION['id'];
+				$tpl->assign("DISPLAYOSI", 'display: none;');
+				$tpl->assign("BUTTON_ADD_BUDGET", '<div class="card-options"><a class="btn btn-primary  btn-sm" data-toggle="modal" data-target="#add-month-budget" href="#"><i class="fa fa-plus"></i>Добавить месячный бюжет</a></div>');
+			}
+			
+
+			$summ_budget = db_get_data("SELECT SUM(budget) AS budget FROM module_budget WHERE osi_id IN ('.$osi_ids.')", "budget");
+			
+			$first_result = "SELECT * FROM module_budget WHERE osi_id IN (".$osi_ids.")";
+
+
+			if (isset($_POST['ex'])) { //Фильр бюджета по годам
+				if (isset($_POST['yearFilter'])) {
+					if(intval($_POST['yearFilter']) > 0){
+						$full_result = $first_result." AND `year` = '".intval($_POST['yearFilter'])."' ORDER BY id DESC";
+						
+						$tpl->assign("FILTER".$_POST['yearFilter'], "selected");
+					}else{
+						$full_result = $first_result." ORDER BY id DESC";
+					}
+				}
+				if (isset($_POST['osiFilter'])) {
+
+					if(intval($_POST['osiFilter']) > 0){
+						$full_result = $first_result." AND osi_id = '".intval($_POST['osiFilter'])."' ORDER BY id DESC";
+					}else{
+						$full_result = $first_result." ORDER BY id DESC";
+					}
+				}
+
+			} else {
+				$full_result = $first_result." ORDER BY id DESC";
+			}
+
+			//Список оси для фильтра
+			$osi_list = db_get_array("SELECT t3.id, t3.name FROM module_flats_citizens AS t1 JOIN module_flats AS t2 ON t2.id = t1.flat_id JOIN module_osi AS t3 ON t2.osi_id = t3.id WHERE t1.`status`=1 AND t1.citizen_id = ".$_SESSION['id']." GROUP BY t2.osi_id", "id", "name");
+			assignList("OSI_LIST", $osi_list, intval($_POST['osiFilter']));
+
+			$index = 0;
+			$result = db_query($full_result);
+			if (db_num_rows($result) > 0) {
+				$tpl->CLEAR("EXPENSE_BUDGET_ITEMS");
+				while ($row = db_fetch_array($result)) {
+					$index++;
+					$osi = db_get_data("SELECT * FROM module_osi WHERE id = ".$row['osi_id']);
+					$summ_expense = '';
+					$summ_budget = '';
+					$balance = '';
+					$tpl->assign("ID", $row['id']);
+					$tpl->assign("ROW_NUMBER", $index);
+					$tpl->assign("NAME_OSI", $osi['name']);
+					$tpl->assign("YEAR", $row['year']);
+					$month = getFullTextMonth(intval($row['month']));
+					$tpl->assign("MONTH", $month);
+					$tpl->assign("BUDGET", $row['budget']);
+					
+					$summ_expense = db_get_data("SELECT SUM(expense) AS expense FROM module_expense_budget WHERE budget_id = ".$row['id'], "expense");
+					$summ_budget = db_get_data("SELECT SUM(budget) AS budget FROM module_budget WHERE osi_id = ".$row['osi_id'], "budget");
+
+					
+					if($summ_expense>0){
+						$tpl->assign("SUMM_EXPENSE", $summ_expense);
+					}else{
+						$tpl->assign("SUMM_EXPENSE", '0');
+					}
+					$tpl->assign("SUMM_BUDGET", $summ_budget);
+					$balance = $summ_budget - $summ_expense;
+					$tpl->assign("SUMM_BALANCE", $balance);
+					if($_SESSION['type'] == 2){
+						$tpl->assign("TRASH_BUTTON", '<a class="btn btn-danger btn-sm text-white" data-toggle="tooltip" data-original-title="Удалить" onclick="deleteBudget('.$row['id'].')"><i class="fa fa-trash"></i></a>');
+					}else{
+						$tpl->assign("TRASH_BUTTON", '');
+					}
+					$tpl->parse("EXPENSE_BUDGET_ITEMS", ".".$moduleName . "expense_budget_item");	
+				}
+			}else{
+				$tpl->assign("DISPLAY", 'style="display:none;"');
+				$tpl->parse("NODATA", ".".$moduleName . "nodata");	
+			}
+
+			//Список оси
+			$osi_list = db_get_array("SELECT t3.id, t3.name FROM module_flats_citizens AS t1 JOIN module_flats AS t2 ON t2.id = t1.flat_id JOIN module_osi AS t3 ON t2.osi_id = t3.id WHERE t1.`status`=1 AND t1.citizen_id = ".$_SESSION['id']." GROUP BY t2.osi_id", "id", "name");
+			assignList("OSI_LIST", $osi_list);
+			
+			
+
+			$tpl->parse(strtoupper($moduleName), $moduleName);	
+		}
+	}else{
+		header("Location: /".LANG_INDEX."/home");
+		exit;
+	}
+
+?>

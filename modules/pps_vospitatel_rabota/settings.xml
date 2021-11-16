@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_vospitatel_rabota</name>
+<description>
+	<lang code="ru" id="1" default="yes">Воспитательная работа</lang>
+	<lang code="en" id="2">Воспитательная работа</lang>
+	<lang code="kz" id="3">Воспитательная работа</lang>
+</description>
+</module>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_completed_forms</name>
+<description>
+	<lang code="ru" id="1" default="yes">Заполненные формы</lang>
+	<lang code="en" id="2">Заполненные формы</lang>
+	<lang code="kz" id="3">Заполненные формы</lang>
+</description>
+</module>

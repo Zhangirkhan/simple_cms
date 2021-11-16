@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_filler_indicators</name>
+<description>
+	<lang code="ru" id="1" default="yes">Индикаторы для заполнения</lang>
+	<lang code="en" id="2">Индикаторы для заполнения</lang>
+	<lang code="kz" id="3">Индикаторы для заполнения</lang>
+</description>
+</module>

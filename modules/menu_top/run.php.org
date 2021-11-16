@@ -1,0 +1,369 @@
+<?php
+	$moduleName = "menu_top";
+	$prefix = "./modules/" . $moduleName . "/";
+	
+	$tpl->define(array(
+			$moduleName => $prefix . $moduleName . ".tpl",
+			$moduleName . "menu_row" => $prefix . "menu_row.tpl",
+			$moduleName . "sub_row" => $prefix . "sub_row.tpl",
+		));
+	
+	# SETTINGS ######################################################################
+		
+	if ($_SESSION['type'] == 1) $menu_id = getval("MENU_UK_PAGE_ID");				
+	if ($_SESSION['type'] == 2) $menu_id = getval("MENU_OSI_PAGE_ID");					
+	if ($_SESSION['type'] == 3) $menu_id = getval("MENU_CITIZEN_PAGE_ID");			
+	if ($_SESSION['type'] == 4) $menu_id = getval("MENU_WORKER_PAGE_ID");			
+	if ($_SESSION['type'] == 5) $menu_id = getval("MENU_MANAGER_PAGE_ID");		
+	
+	$i = 0;
+	$out = '';
+		
+	# MAIN ##########################################################################
+	
+	if ($menu_id > 0) {
+		$result = db_query("SELECT * FROM pages WHERE parent_id = ".$menu_id." AND visible = 1 AND deleted = 0 ORDER BY sortfield");
+		$count = db_num_rows($result);
+		if ($count > 0) {
+			$tpl->CLEAR("MENU_ROWS");
+			while ($row = db_fetch_array($result)) {
+				$i++;
+
+				if ($row['external_link'] != '') {
+					$url = $row['external_link'];
+				} else {
+					if ($mod_rewrite == true) $url = 'http://'.$_SERVER['SERVER_NAME'].'/'.LANG_INDEX.'/'.$row['mod_rewrite']."/";
+						else $url = SITE_URL."?page_id=".$row['id']."&lang=".$row['lang_id'];
+				}
+
+				if ($row['id'] == PAGE_ID) $class = 'active';
+					else $class = '';
+
+				if ($i != $count) $border = 'border-bottom';
+					else $border = '';
+
+				if ($row['id'] == PAGE_ID) $badgeclass = 'badge badge-light';
+				else $badgeclass = 'badge badge-primary';
+
+				$out .= '<a href="'.$url.'" class="dropdown-item"><i class="'.$row['kurs'].'"></i> '.$row['title'].'</a>';
+				
+				$tpl->assign("BADGECLASS", $badgeclass);
+				$tpl->assign("TITLE", $row['title']);
+				$tpl->assign("ICON", $row['kurs']);
+				$tpl->assign("URL", $url);
+				if($url=="http://sqlad.kz/ru/edit_profile_citizen/"){  // Житель начало 
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+				}else if($url=="http://sqlad.kz/ru/edit_profile_citizen/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+				}else if($url=="http://sqlad.kz/ru/my_flats_citizen/"){
+					$flats_citizen = db_query("SELECT t1.*, t2.osi_id, t2.house_id, t2.flat_number, t2.city_id FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t2.id = t1.flat_id WHERE t1.status=1 AND t1.citizen_id = ".$_SESSION['id']);
+					if(db_num_rows($flats_citizen)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($flats_citizen));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+
+				}else if($url=="http://sqlad.kz/ru/my_osi_citizen/"){
+					$osi_citizen = db_query("SELECT t1.*, t2.osi_id, t2.house_id, t2.flat_number, t2.city_id FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t2.id = t1.flat_id WHERE t1.status=1 AND t1.citizen_id = ".$_SESSION['id']);
+					if(db_num_rows($osi_citizen)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($osi_citizen));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+
+				}else if($url=="http://sqlad.kz/ru/requests_citizen/"){
+					$request_citizen = db_query("SELECT * FROM module_requests WHERE request_status_id = 3 AND citizen_id = ".$_SESSION['id']);
+					if(db_num_rows($request_citizen)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($request_citizen));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+					
+				}else if($url=="http://sqlad.kz/ru/polls_citizen/"){
+					$flat_array = db_get_array("SELECT * FROM module_flats_citizens WHERE citizen_id = ".$_SESSION['id'], "flat_id");
+				$flat_array = array_unique($flat_array);
+
+				$flat_where = '';
+				$i = 0;
+				$count = count($flat_array);
+				foreach ($flat_array as $key => $value) {
+					$i++;
+
+					$flat_where .= 'id = '.$value;
+
+					if ($i != $count) $flat_where .= ' OR ';
+				}
+
+				$houses_array = db_get_array("SELECT * FROM module_flats WHERE ".$flat_where, "house_id");
+				$houses_array = array_unique($houses_array);
+
+				$houses_where = '';
+				$i = 0;
+				$count = count($houses_array);
+				foreach ($houses_array as $key => $value) {
+					$i++;
+
+					$houses_where .= 'house_id = '.$value;
+
+					if ($i != $count) $houses_where .= ' OR ';
+				}
+
+				$polls_array = db_get_array("SELECT * FROM module_polls_link WHERE ".$houses_where, "poll_id");
+				$polls_array = array_unique($polls_array);
+
+				$polls_where = '';
+				$i = 0;				
+				$count = count($polls_array);
+				foreach ($polls_array as $key => $value) {
+					$i++;
+
+					$polls_where .= 'id = '.$value;
+
+					if ($i != $count) $polls_where .= ' OR ';
+				}
+
+				$sql = 'SELECT * FROM module_polls WHERE '.$polls_where;
+				$polls_citizens = db_query($sql." AND `status`= 0 ORDER BY id DESC");
+					$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($polls_citizens));
+				}else if($url=="http://sqlad.kz/ru/smeta_citizen/"){ //вытаскиваем квартиры потом дома потом объеденяем дома и ишем голосования по домам
+
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+				}else if($url=="http://sqlad.kz/ru/notice_citizen/"){
+
+					//Дома по ИД через запятую
+					$houses = db_query("SELECT * FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t1.flat_id = t2.id WHERE t1.citizen_id =".$_SESSION['id']);
+					while ($house = db_fetch_array($houses)) {
+						$houses_ids .=  $house['house_id']. ',';
+					}
+					$houses_ids = mb_substr($houses_ids, 0, -1);
+
+					//Квартиры по ИД через запятую
+					$flats = db_query("SELECT t1.flat_id FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t2.id = t1.flat_id WHERE t1.citizen_id =".$_SESSION['id']);
+					while ($flat = db_fetch_array($flats)) {
+						$flats_ids .=  $flat['flat_id']. ',';
+					}
+					$flats_ids = mb_substr($flats_ids, 0, -1);
+
+					$notices = db_query("SELECT * FROM module_notifications WHERE for_type = 3 AND for_id = ".$_SESSION['id']." OR for_type=0 AND for_id=0 AND house_id IN (".$houses_ids.") OR for_type=0 AND for_id=0 AND flat_id IN (".$flats_ids.") ORDER BY time_create DESC");
+
+					$reads = db_query("SELECT * FROM module_reads WHERE reader_type = 3 AND reader_id = ".$_SESSION['id']);
+					
+					$raznica = db_num_rows($notices) - db_num_rows($reads);
+
+					if($raznica > 0){
+						$tpl->assign("COUNT_NEW_ITEMS", $raznica);
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+				}else if($url=="http://sqlad.kz/ru/knowledge_citizen/"){ // Житель конец 
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/panel_osi/"){ //ОСИ начало
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/edit_profile_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+
+				}else if($url=="http://sqlad.kz/ru/my_houses_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+				}else if($url=="http://sqlad.kz/ru/my_citizen_osi/"){
+					$citizen_osi = db_query("SELECT t1.*, t2.osi_id, t2.house_id, t2.flat_number, t2.city_id FROM module_flats_citizens AS t1 LEFT JOIN module_flats AS t2 ON t2.id = t1.flat_id WHERE t1.status = 0 AND t2.osi_id = ".$_SESSION['id']);
+					
+					if(db_num_rows($citizen_osi)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($citizen_osi));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+				}else if($url=="http://sqlad.kz/ru/my_uc_osi/"){
+					$uc_osi = db_query("SELECT * FROM module_osi_and_ucs WHERE osi_id = '".$_SESSION['id']."' AND status = 0 ORDER BY id DESC");
+					if(db_num_rows($uc_osi) >0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($uc_osi));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+				}else if($url=="http://sqlad.kz/ru/requests/"){
+					if($_SESSION['type'] == 1){
+
+						$request_uc = db_query("SELECT * FROM module_requests WHERE request_status_id = 1 AND uc_accepted = 0 AND worker_uc_id = 0 AND osi_id = ".$_SESSION['id']);
+					if(db_num_rows($request_uc)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($request_uc));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+
+					}else if($_SESSION['type'] == 2){ // Меню ОСИ
+						$request_osi = db_query("SELECT * FROM module_requests WHERE request_status_id = 11 AND uc_accepted = 0 AND osi_id = ".$_SESSION['id']);
+					if(db_num_rows($request_osi)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($request_osi));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					}else if($_SESSION['type'] == 3){
+						
+
+					}else if($_SESSION['type'] == 4){
+						$request_osi = db_query("SELECT * FROM module_requests WHERE request_status_id = 1 AND worker_uc_id = ".$_SESSION['id']);
+						if(db_num_rows($request_osi)>0){
+							$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($request_osi));
+						}else{
+							$tpl->assign("COUNT_NEW_ITEMS", "");
+						}
+
+					}else if($_SESSION['type'] == 5){
+
+					} 
+				}else if($url=="http://sqlad.kz/ru/polls_osi/"){
+					
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/motice_osi/"){
+					$notices_osi = db_query("SELECT * FROM module_notifications WHERE for_type = 2 AND for_id = '".$_SESSION['id']."' ORDER BY time_create DESC");
+
+					$reads = db_query("SELECT * FROM module_reads WHERE reader_type = 2 AND reader_id = ".$_SESSION['id']);
+					
+					$raznica = db_num_rows($notices_osi) - db_num_rows($reads);
+					if($raznica>0){
+						$tpl->assign("COUNT_NEW_ITEMS", $raznica);
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+					
+				}else if($url=="http://sqlad.kz/ru/plan_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/knowledge_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/panel_uk/"){ //Меню УК
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/edit_profile_uc/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/my_osi_uk/"){
+					$osi_uc = db_query("SELECT * FROM module_osi_and_ucs WHERE ucs_id = '".$_SESSION['id']."' AND status = 0 ORDER BY id DESC");
+					
+					if(db_num_rows($osi_uc)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($osi_uc));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+				}else if($url=="http://sqlad.kz/ru/my_workers_uk/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/notice_uk/"){
+					
+					$notices_uc = db_query("SELECT * FROM module_notifications WHERE for_type = 1 AND for_id = '".$_SESSION['id']."' ORDER BY time_create DESC");
+
+					$reads = db_query("SELECT * FROM module_reads WHERE reader_type = 1 AND reader_id = ".$_SESSION['id']);
+					
+					$raznica = db_num_rows($notices_uc) - db_num_rows($reads);
+					if($raznica>0){
+						$tpl->assign("COUNT_NEW_ITEMS", $raznica);
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+					
+				}else if($url=="http://sqlad.kz/ru/plan_uk/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/notice_worker/"){
+
+					$notices_worker = db_query("SELECT * FROM module_notifications WHERE for_type = 4 AND for_id = '".$_SESSION['id']."' ORDER BY time_create DESC");
+
+					$reads = db_query("SELECT * FROM module_reads WHERE reader_type = 4 AND reader_id = ".$_SESSION['id']);
+					
+					$raznica = db_num_rows($notices_worker) - db_num_rows($reads);
+					if($raznica > 0){
+						$tpl->assign("COUNT_NEW_ITEMS", $raznica);
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+				}else if($url=="http://sqlad.kz/ru/plan_worker/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/my_workers_uk/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_citizen/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_uc/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_worker/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/smeta_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/expense_budget/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/knowledge_uk/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_uk/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_osi/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}
+				else if($url=="http://sqlad.kz/ru/logout_citizen/"){
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+					
+				}else if($url=="http://sqlad.kz/ru/chat/"){
+					if ($_SESSION['type'] === 1) {
+						$chat_usertype = "uc";
+					} else if ($_SESSION['type'] === 2) {
+						$chat_usertype = "osi";
+					} else if ($_SESSION['type'] === 3) {
+						$chat_usertype = "citizen";
+					} else if ($_SESSION['type'] === 4) {
+						$chat_usertype = "worker";
+					} else if ($_SESSION['type'] === 5) {
+						$chat_usertype = "manager";
+					}
+					$new_chat_messages = db_query("SELECT id from module_chat_messages WHERE to_user = '".$chat_usertype.$_SESSION['id']."' AND readed = 0");
+					if(db_num_rows($new_chat_messages)>0){
+						$tpl->assign("COUNT_NEW_ITEMS", db_num_rows($new_chat_messages));
+					}else{
+						$tpl->assign("COUNT_NEW_ITEMS", "");
+					}
+					
+					
+				}
+				else{
+					$tpl->assign("COUNT_NEW_ITEMS", "");
+				}
+				$tpl->assign("CLASS", $class);
+				$tpl->assign("BORDER", $border);
+				$tpl->parse("MENU_ROWS", ".".$moduleName . "menu_row");	
+			}
+		}
+	}
+	
+	$tpl->assign("MENU_EX", $out);
+	$tpl->parse(strtoupper($moduleName), $moduleName);
+?>

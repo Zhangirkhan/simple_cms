@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_mezhdunarodnaya_deyatelnost</name>
+<description>
+	<lang code="ru" id="1" default="yes">Международная деятельность</lang>
+	<lang code="en" id="2">Международная деятельность</lang>
+	<lang code="kz" id="3">Международная деятельность</lang>
+</description>
+</module>

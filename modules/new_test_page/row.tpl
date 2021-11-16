@@ -1,0 +1,11 @@
+<tr>
+    <td>{GENERAL_ID}</td>
+     <td>{CATEGORY}</td>
+    <td>{NAME}</td>
+    <td>{COUNT_DATA}</td>
+    <!--<td>{STATUS}</td>
+    <td>{FORMULA}</td>
+    <td>{VALUE}</td>
+    <td>{FILE}</td>-->
+    <td>{ACTIONS}</td>
+</tr>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>raiting</name>
+<description>
+	<lang code="ru" id="1" default="yes">Рейтинг</lang>
+	<lang code="en" id="2">Рейтинг</lang>
+	<lang code="kz" id="3">Рейтинг</lang>
+</description>
+</module>

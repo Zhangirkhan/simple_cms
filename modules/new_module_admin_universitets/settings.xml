@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_module_admin_universitets</name>
+<description>
+	<lang code="ru" id="1" default="yes">Новая университеты</lang>
+	<lang code="en" id="2">Новая университеты</lang>
+	<lang code="kz" id="3">Новая университеты</lang>
+</description>
+</module>

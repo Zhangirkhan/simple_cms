@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>add_form</name>
+<description>
+	<lang code="ru" id="1" default="yes">Создать форму</lang>
+	<lang code="en" id="2">Создать форму</lang>
+	<lang code="kz" id="3">Создать форму</lang>
+</description>
+</module>

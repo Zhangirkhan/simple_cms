@@ -1,0 +1,12 @@
+<tr>
+    <td>{GENERAL_ID}</td>
+    <td>{CATEGORY}</td>
+    <td>{NAME}</td>
+    <td>{USER}</td>
+    <td>{DATA}</td>
+    <td>{FILE}</td>
+    <td>{BALL}</td>
+    <td>{STATUS}</td>
+    <td>{CANCEL_REASON}</td>
+    <td>{ACTIONS}</td>
+</tr>

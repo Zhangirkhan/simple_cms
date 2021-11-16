@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>homepage</name>
+<description>
+	<lang code="ru" id="1" default="yes">Главная страница</lang>
+	<lang code="en" id="2">Главная страница</lang>
+	<lang code="kz" id="3">Главная страница</lang>
+</description>
+</module>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_nirs</name>
+<description>
+	<lang code="ru" id="1" default="yes">НИР Преподавателя</lang>
+	<lang code="en" id="2">НИР Преподавателя</lang>
+	<lang code="kz" id="3">НИР Преподавателя</lang>
+</description>
+</module>

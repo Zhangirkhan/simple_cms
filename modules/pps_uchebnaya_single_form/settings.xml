@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_uchebnaya_single_form</name>
+<description>
+	<lang code="ru" id="1" default="yes">Свод на почасовую оплату труда ППС</lang>
+	<lang code="en" id="2">Свод на почасовую оплату труда ППС</lang>
+	<lang code="kz" id="3">Свод на почасовую оплату труда ППС</lang>
+</description>
+</module>

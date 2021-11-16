@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_nauchnaya_rabota</name>
+<description>
+	<lang code="ru" id="1" default="yes">Научно-методическая работа</lang>
+	<lang code="en" id="2">Научно-методическая работа</lang>
+	<lang code="kz" id="3">Научно-методическая работа</lang>
+</description>
+</module>

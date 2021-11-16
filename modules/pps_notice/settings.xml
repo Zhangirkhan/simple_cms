@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_notice</name>
+<description>
+	<lang code="ru" id="1" default="yes">Уведомление преподавателя</lang>
+	<lang code="en" id="2">Уведомление преподавателя</lang>
+	<lang code="kz" id="3">Уведомление преподавателя</lang>
+</description>
+</module>

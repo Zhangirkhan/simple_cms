@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>pps_must_filling_forms</name>
+<description>
+	<lang code="ru" id="1" default="yes">Страница с обязательными для заполнения формами</lang>
+	<lang code="en" id="2">Страница с обязательными для заполнения формами</lang>
+	<lang code="kz" id="3">Страница с обязательными для заполнения формами</lang>
+</description>
+</module>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>forgot_password</name>
+<description>
+	<lang code="ru" id="1" default="yes">Забыли пароль</lang>
+	<lang code="en" id="2">Забыли пароль</lang>
+	<lang code="kz" id="3">Забыли пароль</lang>
+</description>
+</module>

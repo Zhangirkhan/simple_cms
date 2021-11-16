@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>add_knowledge</name>
+<description>
+	<lang code="ru" id="1" default="yes">Создать статью</lang>
+	<lang code="en" id="2">Создать статью</lang>
+	<lang code="kz" id="3">Создать статью</lang>
+</description>
+</module>

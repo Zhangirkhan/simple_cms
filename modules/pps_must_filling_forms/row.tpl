@@ -1,0 +1,9 @@
+<tr>
+    <td>{INDEX}</td>
+    <td>{CATEGORY}</td>
+    <td>{FORM_NAME}</td>
+    <td>{YEAR}</td>
+    <td>{TIME_CREATED}</td>
+    <td>{STATUS}
+    <td>{ACTION}</td>
+</tr>

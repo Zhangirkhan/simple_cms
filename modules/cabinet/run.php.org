@@ -1,0 +1,433 @@
+<?php
+	$moduleName = "cabinet";
+	$prefix = "./modules/".$moduleName."/";
+	
+	$tpl->define(array(
+			$moduleName => $prefix . $moduleName.".tpl",
+			$moduleName . "lc_citizen" => $prefix . "lc_citizen.tpl",
+			$moduleName . "lc_manager_uc" => $prefix . "lc_manager_uc.tpl",
+			$moduleName . "lc_osi" => $prefix . "lc_osi.tpl",
+			$moduleName . "lc_uc" => $prefix . "lc_uc.tpl",
+			$moduleName . "lc_worker_uc" => $prefix . "lc_worker_uc.tpl",
+			$moduleName . "password" => $prefix . "password.tpl",
+			$moduleName . "reviews" => $prefix . "reviews.tpl",
+			$moduleName . "gallery" => $prefix . "gallery.tpl",
+			$moduleName . "image" => $prefix . "image.tpl",
+			$moduleName . "doc" => $prefix . "doc.tpl",
+			$moduleName . "nodata" => $prefix . "nodata.tpl",
+	));
+
+	# SETTINGS ##############################################################################
+
+	$cab_tmp = '';
+	
+	if ($_SESSION['type'] == 1) $cab_tmp = 'lc_uc';				
+	if ($_SESSION['type'] == 2) $cab_tmp = 'lc_osi';			
+	if ($_SESSION['type'] == 3) $cab_tmp = 'lc_citizen';			
+	if ($_SESSION['type'] == 4) $cab_tmp = 'lc_worker_uc';		
+	if ($_SESSION['type'] == 5) $cab_tmp = 'lc_manager_uc';		
+
+	$fileTypes = array('jpg', 'jpeg', 'gif', 'png'); 
+	$docTypes = array('docx', 'txt', 'rtf', 'pdf', 'xls', 'xml', 'htm', 'html', 'swf', 'zip', 'rar', 'mht', 'wmv', 'avi', 'mp4');
+
+	# POST ##################################################################################
+	
+	if (isset($_POST['docs_send'])) {
+		$title = cleanStr($_POST['title']);
+
+		$newFileName1 = '';
+		$file_id = 0;
+
+		if (!empty($_FILES['file'])) {
+			$fileParts = pathinfo($_FILES['file']['name']);
+			if (in_array($fileParts['extension'], $docTypes)) {
+				$filename = $_FILES['file']['name'];
+				$tmp_filename = $_FILES['file']['tmp_name'];
+				$newFileName1 = time()."-1.".$fileParts['extension'];
+
+				$ret = copy($tmp_filename, "./files/".$newFileName1);
+			}
+		}
+		
+		if ($newFileName1 != "") {
+			$sql = "INSERT INTO module_files SET url_files = '".$newFileName1."'";
+			db_query($sql);
+
+			$file_id = db_insert_id();
+		}
+		
+		$sql = "INSERT INTO module_docs SET date = NOW(), title = '".$title."', file_id = '".$file_id."', user_id = ".$_SESSION['id'].", user_type = ".$_SESSION['type'];
+		db_query($sql);
+
+		header("Location: /".LANG_INDEX."/cabinet/1");
+		exit;
+	}
+
+	if (isset($_POST['edit_send'])) {
+		$gallery_id = intval($_POST['gallery_id']);
+		$title = cleanStr($_POST['title']);
+
+		$sql = "UPDATE module_gallery SET title = '".$title."' WHERE id = ".$gallery_id;
+		db_query($sql);
+
+		header("Location: /".LANG_INDEX."/cabinet/1");
+		exit;
+	}
+
+	if (isset($_POST['image_send'])) {
+		$album_id = intval($_POST['album_id']);
+		$title = cleanStr($_POST['title']);
+		
+		$newFileName1 = '';
+
+		if (!empty($_FILES['file'])) {
+			$fileParts = pathinfo($_FILES['file']['name']);
+			if (in_array($fileParts['extension'], $fileTypes)) {
+				$filename = $_FILES['file']['name'];
+				$tmp_filename = $_FILES['file']['tmp_name'];
+				$newFileName1 = time()."-1.".$fileParts['extension'];
+
+				$ret = copy($tmp_filename, "./photos/".$newFileName1);
+			}
+		}
+
+		$sql = "INSERT INTO module_photos SET url_photos = '".$newFileName1."'";
+		db_query($sql);
+
+		$image_id = db_insert_id();
+		
+		$sql = "INSERT INTO module_gallery_images SET album_id = '".$album_id."', title = '".$title."', image_id = '".$image_id."'";
+		db_query($sql);
+
+		header("Location: /".LANG_INDEX."/cabinet/1");
+		exit;
+	}
+
+	if (isset($_POST['gallery_send'])) {
+		$title = cleanStr($_POST['title']);
+
+		$sql = "INSERT INTO module_gallery SET title = '".$title."', user_id = ".$_SESSION['id'].", user_type = ".$_SESSION['type'];
+		db_query($sql);
+
+		header("Location: /".LANG_INDEX."/cabinet/1");
+		exit;
+	}
+
+	if (isset($_POST['change_send'])) {
+		if ($_SESSION['type'] == 1) $table = 'module_ucs';
+		if ($_SESSION['type'] == 2) $table = 'module_osi';
+		if ($_SESSION['type'] == 3) $table = 'module_citizens';
+		if ($_SESSION['type'] == 4) $table = 'module_worker_uc';
+		if ($_SESSION['type'] == 5) $table = 'module_manager_uc';
+
+		$oldPassword = cleanStr($_POST['oldPassword']);
+		$newPassword = cleanStr($_POST['newPassword']);
+		$reNewPassword = cleanStr($_POST['reNewPassword']);
+
+		$result = db_query("SELECT * FROM ".$table." WHERE id = '".$_SESSION['id']."' AND password = MD5('".$oldPassword."') LIMIT 1");
+		if (db_num_rows($result) > 0) {
+			if ($newPassword == $reNewPassword) {
+				$sql = "UPDATE ".$table." SET password = MD5('".$newPassword."') WHERE id = ".$_SESSION['id'];
+				db_query($sql);
+
+				header("Location: /".LANG_INDEX."/cabinet/4");
+				exit;
+			} else {
+				header("Location: /".LANG_INDEX."/cabinet/3");
+				exit;
+			}
+		} else {
+			header("Location: /".LANG_INDEX."/cabinet/2");
+			exit;
+		}
+	}
+
+	if (isset($_POST['send'])) {
+		if ($_SESSION['type'] == 1) {
+			$name = cleanStr($_POST['name']);
+			$phone = cleanStr($_POST['phone']); 
+			$email = cleanStr($_POST['email']);
+			$description = cleanStr($_POST['description']);
+			$worktime = cleanStr($_POST['worktime']);
+			$city_id = intval($_POST['city_id']);
+			$work_type = intval($_POST['work_type']);
+			$newFileName1 = '';
+
+			if (!empty($_FILES['file'])) {
+				$fileParts = pathinfo($_FILES['file']['name']);
+				if (in_array($fileParts['extension'], $fileTypes)) {
+					$filename = $_FILES['file']['name'];
+					$tmp_filename = $_FILES['file']['tmp_name'];
+					$newFileName1 = time()."-1.".$fileParts['extension'];
+
+					$ret = copy($tmp_filename, "./photos/".$newFileName1);
+				}
+			}
+
+			$sql = "INSERT INTO module_photos SET url_photos = '".$newFileName1."'";
+			db_query($sql);
+
+			$image_id = db_insert_id();
+
+			$sql = "UPDATE module_ucs SET city_id = '".$city_id."', name = '".$name."', phone = '".$phone."', email = '".$email."', description = '".$description."', worktime = '".$worktime."', image = '".$image_id."', work_type = '".$work_type."' WHERE id = ".$_SESSION['id'];
+		}
+
+		if ($_SESSION['type'] == 2) {
+			$name = cleanStr($_POST['name']);
+			$phone = cleanStr($_POST['phone']); 
+			$email = cleanStr($_POST['email']);
+			$description = cleanStr($_POST['description']);
+			$requisites = cleanStr($_POST['requisites']); 
+			$worktime = cleanStr($_POST['worktime']);
+			$director = cleanStr($_POST['director']);
+			$newFileName1 = '';
+
+			if (!empty($_FILES['file'])) {
+				$fileParts = pathinfo($_FILES['file']['name']);
+				if (in_array($fileParts['extension'], $fileTypes)) {
+					$filename = $_FILES['file']['name'];
+					$tmp_filename = $_FILES['file']['tmp_name'];
+					$newFileName1 = time()."-1.".$fileParts['extension'];
+
+					$ret = copy($tmp_filename, "./photos/".$newFileName1);
+				}
+			}
+
+			$sql = "INSERT INTO module_photos SET url_photos = '".$newFileName1."'";
+			db_query($sql);
+
+			$image_id = db_insert_id();
+
+			$sql = "UPDATE module_osi SET name = '".$name."', phone = '".$phone."', email = '".$email."', requisites = '".$requisites."', description = '".$description."', worktime = '".$worktime."', director = '".$director."', image = '".$image_id."' WHERE id = ".$_SESSION['id'];
+		}
+
+		if ($_SESSION['type'] == 3) {
+			$name = cleanStr($_POST['name']);
+			$phone = cleanStr($_POST['phone']); 
+			$email = cleanStr($_POST['email']);
+			$pol = cleanStr($_POST['pol']);
+			$birthday = $_POST['birthday'];
+			$iin = cleanStr($_POST['iin']);
+			$newFileName1 = '';
+
+			if (!empty($_FILES['file'])) {
+				$fileParts = pathinfo($_FILES['file']['name']);
+				if (in_array($fileParts['extension'], $fileTypes)) {
+					$filename = $_FILES['file']['name'];
+					$tmp_filename = $_FILES['file']['tmp_name'];
+					$newFileName1 = time()."-1.".$fileParts['extension'];
+
+					$ret = copy($tmp_filename, "./photos/".$newFileName1);
+				}
+			}
+
+			$sql = "INSERT INTO module_photos SET url_photos = '".$newFileName1."'";
+			db_query($sql);
+
+			$image_id = db_insert_id();
+
+			$sql = "UPDATE module_citizens SET name = '".$name."', phone = '".$phone."', email = '".$email."', iin = '".$iin."', birthday = '".$birthday."', pol = '".$pol."', image = '".$image_id."' WHERE id = ".$_SESSION['id'];
+		}
+
+		if ($_SESSION['type'] == 4) {
+			$name = cleanStr($_POST['name']);
+			$phone = cleanStr($_POST['phone']); 
+			$email = cleanStr($_POST['email']);	
+			$position_id = intval($_POST['position']);
+
+			$sql = "UPDATE module_worker_uc SET name = '".$name."', phone = '".$phone."', email = '".$email."', position_id = '".$position_id."' WHERE id = ".$_SESSION['id'];
+		}
+
+		if ($_SESSION['type'] == 5) {
+			$name = cleanStr($_POST['name']);
+			$phone = cleanStr($_POST['phone']); 
+			$email = cleanStr($_POST['email']);			
+
+			$sql = "UPDATE module_manager_uc SET fio = '".$name."', phone = '".$phone."', email = '".$email."' WHERE id = ".$_SESSION['id'];
+		}
+
+		db_query($sql);
+
+		header("Location: /".LANG_INDEX."/cabinet/1");
+		exit;
+	}
+
+	# MAIN ##################################################################################
+	
+	if (isset($_SESSION['id'])) {
+		if (isset($_GET['item_id'])) {
+			switch ($_GET['item_id']) {
+				case 1: $tpl->assign("RESULT_MESSAGE", showResult(getval("MSG_SAVE_OK_TITLE"), 'result_error')); break;
+				case 2: $tpl->assign("RESULT_MESSAGE", showResult(getval("MSG_WRONG_OLD_PASSWORD_TITLE"), 'result_error')); break;
+				case 3: $tpl->assign("RESULT_MESSAGE", showResult(getval("MSG_WRONG_PASSWORD_TITLE"), 'result_error')); break;
+				case 4: $tpl->assign("RESULT_MESSAGE", showResult(getval("MSG_PASSWOR_OK_TITLE"), 'result_error')); break;
+				default: $tpl->assign("RESULT_MESSAGE", '');
+			}
+		} else {
+			$tpl->assign("RESULT_MESSAGE", '');
+		}
+
+		if ($_SESSION['type'] == 1) {
+			$data = db_get_data("SELECT * FROM module_ucs WHERE id = ".$_SESSION['id']);
+
+			$city_list = db_get_array("SELECT * FROM module_cities ORDER BY id", "id", "name");
+			assignList("CITY_LIST", $city_list, $data['city_id']);
+
+			$WORK_TYPE_LIST = db_get_array("SELECT * FROM module_request_types ORDER BY id", "id", "name");
+			assignList("WORK_TYPE_LIST", $WORK_TYPE_LIST, $data['work_type']);
+
+			$tpl->assign("NAME_VALUE", $data['name']);
+			$tpl->assign("PHONE_VALUE", $data['phone']);
+			$tpl->assign("EMAIL_VALUE", $data['email']);
+			$tpl->assign("DESCRIPTION_VALUE", $data['description']);
+			$tpl->assign("WORKTIME_VALUE", $data['worktime']);
+		}
+
+		if ($_SESSION['type'] == 2) {
+			$data = db_get_data("SELECT * FROM module_osi WHERE id = ".$_SESSION['id']);
+
+			$tpl->assign("NAME_VALUE", $data['name']);
+			$tpl->assign("PHONE_VALUE", $data['phone']);
+			$tpl->assign("EMAIL_VALUE", $data['email']);
+			$tpl->assign("REQUISITES_VALUE", $data['requisites']);
+			$tpl->assign("DESCRIPTION_VALUE", $data['description']);
+			$tpl->assign("WORKTIME_VALUE", $data['worktime']);
+			$tpl->assign("DIRECTOR_VALUE", $data['director']);
+		}
+
+		if ($_SESSION['type'] == 3) {
+			$data = db_get_data("SELECT * FROM module_citizens WHERE id = ".$_SESSION['id']);
+
+			$tpl->assign("NAME_VALUE", $data['name']);
+			$tpl->assign("PHONE_VALUE", $data['phone']);
+			$tpl->assign("EMAIL_VALUE", $data['email']);
+			$tpl->assign("IIN_VALUE", $data['iin']);
+			$tpl->assign("BIRTHDAY_VALUE", $data['birthday']);
+
+			
+			if($data['pol']!= null){
+				$SEND = '<option selected value="'.$data['pol'].'"> '.$data['pol'].'</option> ';
+				if($data['pol'] == "Мужчина"){
+					$SEND .= '<option value="Женщина"> Женщина</option> ';
+				}else{
+					$SEND .= '<option value="Мужчина"> Мужчина</option> ';
+				}
+			}else{
+				$SEND = '<option value="Женщина"> Женщина</option> ';
+				$SEND .= '<option value="Мужчина"> Мужчина</option> ';
+			}
+			
+
+			$tpl->assign("POL_VALUE", $SEND);
+		}
+
+		if ($_SESSION['type'] == 4) {
+			$data = db_get_data("SELECT * FROM module_worker_uc WHERE id = ".$_SESSION['id']);
+
+			$position_list = db_get_array("SELECT * FROM module_position ORDER BY id", "id", "value");
+			assignList("POSITION_LIST", $position_list, $data['position_id']);
+	
+			$tpl->assign("NAME_VALUE", $data['name']);
+			$tpl->assign("PHONE_VALUE", $data['phone']);
+			$tpl->assign("EMAIL_VALUE", $data['email']);
+		}
+
+		if ($_SESSION['type'] == 5) {
+			$data = db_get_data("SELECT * FROM module_manager_uc WHERE id = ".$_SESSION['id']);
+
+			$tpl->assign("NAME_VALUE", $data['fio']);
+			$tpl->assign("PHONE_VALUE", $data['phone']);
+			$tpl->assign("EMAIL_VALUE", $data['email']);
+		}
+
+		$result = db_query("SELECT * FROM module_request_reviews WHERE wroter_type = ".$_SESSION['type']." AND wroter = ".$_SESSION['id']);
+		if (db_num_rows($result) > 0) {
+			$tpl->CLEAR("REVIEWS_ROW");
+
+			while ($row = db_fetch_array($result)) {
+				$tpl->assign("ID", $row['id']);
+				$tpl->assign("REVIEW", $row['description']);
+				$tpl->assign("RATING", $row['rating_id']);
+
+				if ($data['executor_type'] == 2) {
+					$name = db_get_data("SELECT * FROM module_osi WHERE id = ".$row['executor']);
+					$tpl->assign("EXECUTOR", $name['name']);
+				} else {
+					$name = db_get_data("SELECT * FROM module_worker_uc WHERE id = ".$row['executor']);
+					$tpl->assign("EXECUTOR", $name['name']);
+				}
+
+				$tpl->parse("REVIEWS_ROW", ".".$moduleName . "reviews");	
+			}
+
+			$tpl->assign("REVIEWS_ROW_COUNT", db_num_rows($result));
+		}
+
+		$album_select_list = '';
+		$result = db_query("SELECT * FROM module_gallery WHERE user_type = ".$_SESSION['type']." AND user_id = ".$_SESSION['id']);
+		if (db_num_rows($result) > 0) {
+			$tpl->CLEAR("GALLERY_ROW");
+
+			while ($row = db_fetch_array($result)) {
+				$tpl->CLEAR("IMAGES_ROWS");
+
+				$album_select_list .= '<option value="'.$row['id'].'">'.$row['title'].'</option>';
+
+				$i_result = db_query("SELECT * FROM module_gallery_images WHERE album_id = ".$row['id']);
+				if (db_num_rows($i_result) > 0) {
+					while ($i_row = db_fetch_array($i_result)) {
+						if ($i_row['image_id'] > 0) {
+							$img_url = db_get_data("SELECT url_photos FROM module_photos WHERE id = ".$i_row['image_id'], "url_photos");
+							$image = '../photos/'.$img_url;
+						} else {
+							$image = '../assets/images/photos/1.jpg';
+						}
+
+						$tpl->assign("IMAGE_URL", $image);
+						$tpl->assign("IMAGE_ID", $i_row['id']);
+						$tpl->assign("IMAGE_TITLE", $i_row['title']);
+						$tpl->parse("IMAGES_ROWS", ".".$moduleName . "image");
+					}
+				} else {
+					$tpl->assign("IMAGES_ROWS", "");
+				}
+
+				$tpl->assign("GALLERY_ID", $row['id']);
+				$tpl->assign("GALLERY_TITLE", $row['title']);
+				$tpl->parse("GALLERY_ROW", ".".$moduleName . "gallery");
+			}
+		}
+		else{
+			$tpl->assign("HIDDEN1", "display:none");
+			$tpl->parse("NODATA1", ".".$moduleName . "nodata");	
+		}
+
+		$result = db_query("SELECT * FROM module_docs WHERE user_type = ".$_SESSION['type']." AND user_id = ".$_SESSION['id']);
+		if (db_num_rows($result) > 0) {
+			$tpl->CLEAR("DOC_ROWS");
+
+			while ($row = db_fetch_array($result)) {
+				$date = date("d.m.Y H:i:s", strtotime($row['date']));
+				$file_url = db_get_data("SELECT url_files FROM module_files WHERE id = ".$row['file_id'], "url_files");
+
+				$tpl->assign("DOC_ID", $row['id']);
+				$tpl->assign("DOC_TITLE", $row['title']);
+				$tpl->assign("DOC_DATE", $date);
+				$tpl->assign("DOC_FILE", $file_url);
+				$tpl->parse("DOC_ROWS", ".".$moduleName . "doc");
+			}
+		}
+		else{
+			$tpl->assign("HIDDEN", "display:none");
+			$tpl->parse("NODATA", ".".$moduleName . "nodata");	
+		}
+
+		$tpl->assign("ALBUM_LIST", $album_select_list);
+		$tpl->parse("CHANGE_PASSWORD", ".".$moduleName . "password");
+		$tpl->parse("ROWS", ".".$moduleName . $cab_tmp);
+		$tpl->parse(strtoupper($moduleName), $moduleName);
+	} else {
+		header("Location: /".LANG_INDEX."/home");
+		exit;
+	}
+?>

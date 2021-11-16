@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>cabinet</name>
+<description>
+	<lang code="ru" id="1" default="yes">Личный кабинет</lang>
+	<lang code="en" id="2">Cabinet</lang>
+	<lang code="kz" id="3">Личный кабинет</lang>
+</description>
+</module>

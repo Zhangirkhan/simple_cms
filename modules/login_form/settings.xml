@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>login_form</name>
+<description>
+	<lang code="ru" id="1" default="yes">Авторизация</lang>
+	<lang code="en" id="2">Авторизация</lang>
+	<lang code="kz" id="3">Авторизация</lang>
+</description>
+</module>

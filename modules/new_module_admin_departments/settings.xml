@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+<name>new_module_admin_departments</name>
+<description>
+	<lang code="ru" id="1" default="yes">Новая страница подразделений</lang>
+	<lang code="en" id="2">Новая страница подразделений</lang>
+	<lang code="kz" id="3">Новая страница подразделений</lang>
+</description>
+</module>
